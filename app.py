@@ -312,7 +312,7 @@ st.markdown("""
 <div class="hero">
   <div class="hero-byline">Anna Barto</div>
   <div class="hero-title">Personal AI DJ</div>
-  <div class="hero-sub">Tell me what you are in the mood for.<br>I will give you song suggestions from your YouTube Music library.</div>
+  <div class="hero-sub">Tell me what you are in the mood for.<br>I will give you song suggestions from Anna's YouTube Music library.</div>
 </div>
 """, unsafe_allow_html=True)
 
