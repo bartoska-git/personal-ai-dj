@@ -174,6 +174,14 @@ st.markdown(f"""
     transition: border-color 0.2s, color 0.2s;
     outline: none !important;
     box-shadow: none !important;
+    text-align: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }}
+  /* Centre the text node Streamlit wraps inside <p> */
+  button[kind="secondary"] p {{
+    text-align: center !important;
+    width: 100% !important;
   }}
   button[kind="secondary"]:hover {{
     border-color: {ACCENT} !important;
@@ -393,14 +401,14 @@ if st.session_state.playlist:
 
     # Action buttons
     st.markdown('<div class="action-row">', unsafe_allow_html=True)
-    col1, col2, col3, col4 = st.columns([1, 1.3, 1.2, 1.5])
+    col1, col2, col3 = st.columns([1, 1.4, 1.2])
     with col1:
-        if st.button("↺  Start over", type="secondary"):
+        if st.button("↺  Start over", type="secondary", use_container_width=True):
             st.session_state.playlist = None
             st.session_state.last_query = ""
             st.rerun()
     with col2:
-        if st.button("↻  New suggestions", type="secondary"):
+        if st.button("↻  New suggestions", type="secondary", use_container_width=True):
             st.session_state.pending_query = st.session_state.last_query
             st.session_state.is_loading = True
             st.rerun()
@@ -411,6 +419,7 @@ if st.session_state.playlist:
             file_name="playlist.txt",
             mime="text/plain",
             type="secondary",
+            use_container_width=True,
         )
     st.markdown('</div>', unsafe_allow_html=True)
 
