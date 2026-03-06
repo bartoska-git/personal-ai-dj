@@ -20,7 +20,8 @@ from supabase import create_client
 
 load_dotenv()
 openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-supabase      = create_client(os.getenv('SUPABASE_URL'), os.getenv('SUPABASE_KEY'))
+# Uses service role key — needed for INSERT operations (bypasses RLS)
+supabase      = create_client(os.getenv('SUPABASE_URL'), os.getenv('SUPABASE_SERVICE_KEY'))
 
 ENRICHED_PATH = 'enriched_songs.json'
 EMBED_MODEL   = 'text-embedding-3-small'   # 1536 dimensions
