@@ -5,6 +5,8 @@ Multi-source song enrichment, semantic embeddings, and vector search to match an
 
 **Live demo: [personal-ai-dj.streamlit.app](https://personal-ai-dj.streamlit.app/)**
 
+![Demo](Personal_AI_DJ.gif)
+
 ---
 
 ## The story
