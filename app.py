@@ -56,23 +56,33 @@ st.markdown(f"""
     margin: 0 auto;
   }}
 
-  /* ── Input focus ring — override Streamlit's default orange ── */
-  /* Target the Base Web input container */
-  [data-baseweb="input"] {{
+  /* ── Input — complete reset of all Streamlit/BaseWeb artefacts ── */
+  [data-baseweb="form-control"],
+  [data-baseweb="input"],
+  [data-baseweb="input"]:focus,
+  [data-baseweb="input"]:focus-within {{
     border: none !important;
     box-shadow: none !important;
+    background: transparent !important;
+    outline: none !important;
   }}
   [data-baseweb="base-input"] {{
     background-color: #ffffff !important;
     border: 1.5px solid #ddd5c5 !important;
     border-radius: 10px !important;
+    box-shadow: none !important;
+    outline: none !important;
+    overflow: hidden !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
   }}
   [data-baseweb="base-input"]:focus-within {{
     border-color: {ACCENT} !important;
     box-shadow: 0 0 0 3px {ACCENT_GLOW} !important;
   }}
-  /* Kill any remaining focus outlines */
-  .stTextInput input, .stTextInput input:focus {{
+  /* Kill inner input default focus styles */
+  .stTextInput input,
+  .stTextInput input:focus,
+  .stTextInput input:focus-visible {{
     outline: none !important;
     box-shadow: none !important;
     border: none !important;
@@ -101,7 +111,7 @@ st.markdown(f"""
     width: 100% !important;
   }}
 
-  /* Primary (submit) — covers both st.button and st.form_submit_button */
+  /* Primary (submit) */
   button[kind="primary"],
   button[kind="primaryFormSubmit"] {{
     background-color: {ACCENT} !important;
@@ -115,10 +125,33 @@ st.markdown(f"""
     white-space: nowrap !important;
     transition: background-color 0.2s ease;
     margin-top: 0.5rem;
+    outline: none !important;
+    box-shadow: none !important;
   }}
   button[kind="primary"]:hover,
   button[kind="primaryFormSubmit"]:hover {{
     background-color: {ACCENT_HOVER} !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }}
+  /* Remove the pink/browser focus + active rings */
+  button[kind="primary"]:focus,
+  button[kind="primaryFormSubmit"]:focus,
+  button[kind="primary"]:focus-visible,
+  button[kind="primaryFormSubmit"]:focus-visible,
+  button[kind="primary"]:active,
+  button[kind="primaryFormSubmit"]:active {{
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }}
+  /* Loading / disabled state — keep brand colour, just slightly dimmed */
+  button[kind="primary"]:disabled,
+  button[kind="primaryFormSubmit"]:disabled {{
+    background-color: {ACCENT} !important;
+    color: rgba(255,255,255,0.85) !important;
+    opacity: 0.78 !important;
+    cursor: default !important;
   }}
 
   /* Secondary (Start over / New suggestions) */
@@ -132,11 +165,19 @@ st.markdown(f"""
     font-weight: 600 !important;
     white-space: nowrap !important;
     transition: border-color 0.2s, color 0.2s;
+    outline: none !important;
+    box-shadow: none !important;
   }}
   button[kind="secondary"]:hover {{
     border-color: {ACCENT} !important;
     color: {ACCENT} !important;
     background-color: transparent !important;
+  }}
+  button[kind="secondary"]:focus,
+  button[kind="secondary"]:focus-visible,
+  button[kind="secondary"]:active {{
+    outline: none !important;
+    box-shadow: none !important;
   }}
 
   /* ── Results section ── */
@@ -220,9 +261,6 @@ st.markdown(f"""
     border-top: 1px solid #e4ddd0;
   }}
 
-  /* ── Spinner ── */
-  .stSpinner > div {{ color: #9a8e7e !important; }}
-
   /* ── Footer ── */
   .footer {{
     text-align: center;
@@ -240,6 +278,10 @@ if "playlist" not in st.session_state:
     st.session_state.playlist = None
 if "last_query" not in st.session_state:
     st.session_state.last_query = ""
+if "is_loading" not in st.session_state:
+    st.session_state.is_loading = False
+if "pending_query" not in st.session_state:
+    st.session_state.pending_query = ""
 
 
 # ── Hero ──────────────────────────────────────────────────────────────────────
@@ -247,42 +289,53 @@ st.markdown("""
 <div class="hero">
   <div class="hero-byline">Anna Barto</div>
   <div class="hero-title">Personal AI DJ</div>
-  <div class="hero-sub">Tell me what you are in the mood for.
-  I will give you song suggestions from your YouTube Music library.</div>
+  <div class="hero-sub">Tell me what you are in the mood for.<br>I will give you song suggestions from your YouTube Music library.</div>
 </div>
 """, unsafe_allow_html=True)
 
 
-# ── Input + button (wrapped in form — removes "Press enter to apply" tooltip) ──
+# ── Input + button ─────────────────────────────────────────────────────────────
+# Button label and disabled state reflect loading status — spinner lives in the button
+btn_label = "Building your suggestions…" if st.session_state.is_loading else "Get suggestions →"
+
 with st.form("search_form", border=False):
     query = st.text_input(
         "mood",
-        placeholder="e.g. something melancholy for a rainy afternoon · upbeat for a morning run · late-night jazz",
+        value=st.session_state.pending_query if st.session_state.is_loading else "",
+        placeholder="e.g. something melancholy for a rainy afternoon · upbeat for a morning run · songs I haven't played in a while",
         label_visibility="collapsed",
+        disabled=st.session_state.is_loading,
     )
     _, btn_col, _ = st.columns([1, 2, 1])
     with btn_col:
         generate = st.form_submit_button(
-            "Get suggestions →",
+            btn_label,
             type="primary",
             use_container_width=True,
+            disabled=st.session_state.is_loading,
         )
 
 
 # ── Trigger generation ────────────────────────────────────────────────────────
-def run_query(q: str):
-    with st.spinner("Building your suggestions…"):
-        try:
-            st.session_state.playlist = get_playlist(q)
-            st.session_state.last_query = q
-        except Exception as e:
-            st.error(f"Something went wrong: {e}")
-
-if generate:
+if generate and not st.session_state.is_loading:
     if query.strip():
-        run_query(query.strip())
+        # Store query, flip loading flag, rerun — next render shows "Building…" in button
+        st.session_state.pending_query = query.strip()
+        st.session_state.is_loading = True
+        st.rerun()
     else:
         st.warning("Type a mood or moment first.")
+
+# Execute query while button shows "Building your suggestions…"
+if st.session_state.is_loading and st.session_state.pending_query:
+    try:
+        st.session_state.playlist = get_playlist(st.session_state.pending_query)
+        st.session_state.last_query = st.session_state.pending_query
+    except Exception as e:
+        st.error(f"Something went wrong: {e}")
+    st.session_state.is_loading = False
+    st.session_state.pending_query = ""
+    st.rerun()
 
 
 # ── Results ───────────────────────────────────────────────────────────────────
@@ -315,7 +368,7 @@ if st.session_state.playlist:
         </div>
         """, unsafe_allow_html=True)
 
-    # Action buttons below
+    # Action buttons
     st.markdown('<div class="action-row">', unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 1.3, 2.5])
     with col1:
@@ -325,7 +378,8 @@ if st.session_state.playlist:
             st.rerun()
     with col2:
         if st.button("↻  New suggestions", type="secondary"):
-            run_query(st.session_state.last_query)
+            st.session_state.pending_query = st.session_state.last_query
+            st.session_state.is_loading = True
             st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
