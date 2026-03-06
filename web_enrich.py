@@ -27,12 +27,12 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from tavily import TavilyClient
 
-load_dotenv('/Users/bartoska/web/yt-music-prototype/.env')
+load_dotenv()
 
 openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 tavily_client = TavilyClient(api_key=os.getenv('TAVILY_API_KEY'))
 
-INPUT_FILE = '/Users/bartoska/web/yt-music-prototype/enriched_songs.json'
+INPUT_FILE = 'enriched_songs.json'
 
 with open(INPUT_FILE) as f:
     songs = json.load(f)

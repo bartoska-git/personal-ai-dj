@@ -2,7 +2,7 @@ import json
 import time
 from ytmusicapi import YTMusic
 
-yt = YTMusic('/Users/bartoska/web/yt-music-prototype/browser.json')
+yt = YTMusic('browser.json')
 
 # Playlists to skip (user's choice)
 SKIP_PLAYLISTS = {
@@ -20,7 +20,7 @@ SKIP_PLAYLISTS = {
 songs = {}  # videoId -> song dict, for deduplication
 
 # Load existing songs.json so we don't lose data from previous runs
-output_path = '/Users/bartoska/web/yt-music-prototype/songs.json'
+output_path = 'songs.json'
 try:
     with open(output_path, 'r', encoding='utf-8') as f:
         existing = json.load(f)
@@ -108,7 +108,7 @@ for p in playlists:
 
 # Save to JSON
 song_list = list(songs.values())
-output_path = '/Users/bartoska/web/yt-music-prototype/songs.json'
+output_path = 'songs.json'
 with open(output_path, 'w', encoding='utf-8') as f:
     json.dump(song_list, f, indent=2, ensure_ascii=False)
 

@@ -18,11 +18,11 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from supabase import create_client
 
-load_dotenv('/Users/bartoska/web/yt-music-prototype/.env')
+load_dotenv()
 openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 supabase      = create_client(os.getenv('SUPABASE_URL'), os.getenv('SUPABASE_KEY'))
 
-ENRICHED_PATH = '/Users/bartoska/web/yt-music-prototype/enriched_songs.json'
+ENRICHED_PATH = 'enriched_songs.json'
 EMBED_MODEL   = 'text-embedding-3-small'   # 1536 dimensions
 EMBED_BATCH   = 100
 INSERT_BATCH  = 50

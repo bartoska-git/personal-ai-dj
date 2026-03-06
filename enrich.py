@@ -21,11 +21,11 @@ import time
 from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv('/Users/bartoska/web/yt-music-prototype/.env')
+load_dotenv()
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-SONGS_PATH     = '/Users/bartoska/web/yt-music-prototype/enriched_songs.json'
-ENRICHED_PATH  = '/Users/bartoska/web/yt-music-prototype/enriched_songs.json'
+SONGS_PATH     = 'enriched_songs.json'
+ENRICHED_PATH  = 'enriched_songs.json'
 BATCH_SIZE     = 20
 
 

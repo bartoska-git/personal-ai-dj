@@ -20,14 +20,14 @@ import urllib.request
 import urllib.parse
 from dotenv import load_dotenv
 
-load_dotenv('/Users/bartoska/web/yt-music-prototype/.env')
+load_dotenv()
 
 API_KEY    = os.getenv('LASTFM_API_KEY')
 BASE_URL   = 'http://ws.audioscrobbler.com/2.0/'
 MIN_WEIGHT = 1      # accept all tags — niche artists have very few votes
 MAX_TAGS   = 8      # keep top N tags per song
 SAVE_EVERY = 50
-INPUT_FILE = '/Users/bartoska/web/yt-music-prototype/enriched_songs.json'
+INPUT_FILE = 'enriched_songs.json'
 
 if not API_KEY:
     raise SystemExit('Missing LASTFM_API_KEY in .env')
