@@ -94,6 +94,13 @@ st.markdown(f"""
   .stTextInput input::placeholder {{
     color: #b8b0a0 !important;
   }}
+  /* Show the query text while input is disabled during loading */
+  .stTextInput input:disabled,
+  .stTextInput input[disabled] {{
+    color: #9a8e7e !important;
+    -webkit-text-fill-color: #9a8e7e !important;
+    opacity: 1 !important;
+  }}
   .stTextInput > label {{ display: none; }}
   /* Hide "Press Enter to submit form" tooltip */
   [data-testid="InputInstructions"] {{ display: none !important; }}
@@ -273,6 +280,22 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+def playlist_as_text(query: str, playlist: dict) -> str:
+    """Build a plain-text version of the playlist for download."""
+    lines = ["Personal AI DJ", f"Query: {query}", ""]
+    for i, song in enumerate(playlist["songs"], 1):
+        vid = song.get("video_id")
+        link = f"https://music.youtube.com/watch?v={vid}" if vid else (
+            f"https://music.youtube.com/search?q={song['title'].replace(' ', '+')}+{song['artist'].replace(' ', '+')}"
+        )
+        lines.append(f"{i:02d}. {song['title']} — {song['artist']}")
+        lines.append(f"    {link}")
+        lines.append(f"    {song['reason']}")
+        lines.append("")
+    return "\n".join(lines)
+
+
 # ── Session state ─────────────────────────────────────────────────────────────
 if "playlist" not in st.session_state:
     st.session_state.playlist = None
@@ -302,7 +325,7 @@ with st.form("search_form", border=False):
     query = st.text_input(
         "mood",
         value=st.session_state.pending_query if st.session_state.is_loading else "",
-        placeholder="e.g. something melancholy for a rainy afternoon · upbeat for a morning run · songs I haven't played in a while",
+        placeholder="e.g. melancholy for a rainy afternoon · upbeat morning run · songs I haven't heard lately",
         label_visibility="collapsed",
         disabled=st.session_state.is_loading,
     )
@@ -370,7 +393,7 @@ if st.session_state.playlist:
 
     # Action buttons
     st.markdown('<div class="action-row">', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 1.3, 2.5])
+    col1, col2, col3, col4 = st.columns([1, 1.3, 1.2, 1.5])
     with col1:
         if st.button("↺  Start over", type="secondary"):
             st.session_state.playlist = None
@@ -381,6 +404,14 @@ if st.session_state.playlist:
             st.session_state.pending_query = st.session_state.last_query
             st.session_state.is_loading = True
             st.rerun()
+    with col3:
+        st.download_button(
+            "↓  Save playlist",
+            data=playlist_as_text(st.session_state.last_query, playlist),
+            file_name="playlist.txt",
+            mime="text/plain",
+            type="secondary",
+        )
     st.markdown('</div>', unsafe_allow_html=True)
 
 
