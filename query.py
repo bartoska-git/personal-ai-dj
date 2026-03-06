@@ -63,13 +63,9 @@ Your job:
 1. Select the 6–12 songs that BEST match based on how they actually sound — ignore title keywords
 2. Order them thoughtfully — consider energy arc and flow
 3. Write a specific one-sentence reason per song referencing its actual musical qualities
-4. Give the playlist a short evocative title (not "Your Playlist" or "Sad Songs")
-5. Write a warm 1–2 sentence intro speaking directly to Anna
 
 Return JSON in this exact shape:
 {
-  "title": "playlist title",
-  "intro": "warm 1-2 sentence intro",
   "songs": [
     {
       "title": "song title",
