@@ -1,0 +1,30 @@
+# Secrets & API keys
+.env
+
+# Personal listening data — never commit
+enriched_songs.json
+songs.json
+watch_history.json
+
+# Google Takeout exports
+*.zip
+takeout_extract/
+
+# ytmusicapi auth (contains Google session cookies)
+browser.json
+.cache
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# macOS
+.DS_Store
+
+# Claude Code internal
+.claude/
+
+# Streamlit secrets (real values — use secrets.toml.example as template)
+.streamlit/secrets.toml
