@@ -43,7 +43,7 @@ Google Takeout    --+
 3. **Play history** — [Google Takeout](https://takeout.google.com) `watch_history.json` is parsed to attach `play_count` and `last_played` to each song. These are stored as metadata in Supabase, not embedded.
 4. **Embed** (`embed.py`) — `text-embedding-3-small` (1536 dimensions) generates a vector for each song's enriched description. All songs are upserted into Supabase pgvector.
 
-> **Note:** Song titles are deliberately excluded from the embedded text. This prevents superficial keyword matching: a search for "sad" should surface songs that actually sound sad, not songs with "sad" in the title.
+> **Note:** Song titles are deliberately stripped from the embedded text. The title field is excluded entirely, and the title mention is removed from the opening of GPT-generated descriptions. This reduces superficial keyword matching: a search for "sad" should surface songs that actually sound sad, not songs with "sad" in the title.
 
 ### Runtime query (per request)
 
@@ -88,9 +88,9 @@ I initially used OpenAI web search for re-enrichment, which produced the highest
 
 Last.fm genre and mood tags are appended to each song's embedded text as an additional signal. These tags give the retrieval step more to work with on tracks that even web search could not fully characterise.
 
-**Title excluded from embeddings**
+**Title stripped from embeddings**
 
-If song titles were included in the embedded text, a query like "something sad" would surface songs with "sad" in the title regardless of how they actually sound. Excluding titles forces retrieval to operate purely on musical description.
+If song titles were included in the embedded text, a query like "something sad" would surface songs with "sad" in the title regardless of how they actually sound. Song titles are excluded as standalone fields and stripped from the opening of GPT-generated descriptions, which meaningfully reduces but does not fully eliminate title influence, as titles can still appear later in description prose.
 
 **Play history as a soft ranking signal**
 
