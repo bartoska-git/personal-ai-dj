@@ -1,3 +1,4 @@
+import base64
 import streamlit as st
 from query import get_playlist
 
@@ -276,6 +277,28 @@ st.markdown(f"""
     border-top: 1px solid #e4ddd0;
   }}
 
+  /* ── Download link styled as secondary button ── */
+  a.download-btn {{
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    background-color: transparent;
+    color: #9a8e7e !important;
+    border: 1.5px solid #d8d0be;
+    border-radius: 24px;
+    padding: 0.45rem 1.4rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    box-sizing: border-box;
+    transition: border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+  }}
+  a.download-btn:hover {{
+    border-color: {ACCENT};
+    color: {ACCENT} !important;
+  }}
+
   /* ── Footer ── */
   .footer {{
     text-align: center;
@@ -413,13 +436,11 @@ if st.session_state.playlist:
             st.session_state.is_loading = True
             st.rerun()
     with col3:
-        st.download_button(
-            "↓  Save playlist",
-            data=playlist_as_text(st.session_state.last_query, playlist),
-            file_name="playlist.txt",
-            mime="text/plain",
-            type="secondary",
-            use_container_width=True,
+        txt = playlist_as_text(st.session_state.last_query, playlist)
+        b64 = base64.b64encode(txt.encode()).decode()
+        st.markdown(
+            f'<a class="download-btn" href="data:text/plain;base64,{b64}" download="playlist.txt">↓  Save playlist</a>',
+            unsafe_allow_html=True,
         )
     st.markdown('</div>', unsafe_allow_html=True)
 
